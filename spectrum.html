@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>スペクトラムバトル</title>
+  <style>
+    :root{
+      --bg:#0f1220;
+      --card:#161a2e;
+      --muted:#a8b0d6;
+      --text:#eef1ff;
+      --accent:#6ea8ff;
+      --border:rgba(255,255,255,.12);
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, "Hiragino Sans", "Noto Sans JP", Segoe UI, Roboto, sans-serif;
+      background: radial-gradient(1200px 700px at 20% 0%, rgba(110,168,255,.25), transparent 55%),
+                  radial-gradient(900px 600px at 90% 15%, rgba(160,110,255,.18), transparent 55%),
+                  var(--bg);
+      color:var(--text);
+      line-height:1.6;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px 14px;
+    }
+    .app{
+      width:min(960px, 100%);
+    }
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      border:1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px;
+    }
+    .top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom: 12px;
+    }
+    .title{
+      margin:0;
+      font-size: clamp(22px, 3.3vw, 34px);
+      letter-spacing: .02em;
+    }
+    .sub{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size: 14px;
+    }
+    .step{
+      color:var(--muted);
+      font-size: 12px;
+      border:1px solid var(--border);
+      padding: 4px 10px;
+      border-radius: 999px;
+      white-space:nowrap;
+      height: fit-content;
+      margin-top: 2px;
+    }
+
+    /* pages */
+    .page{ display:none; }
+    .page.active{ display:block; }
+
+    /* question */
+    .q{
+      margin-top: 10px;
+      padding: 14px;
+      border:1px solid var(--border);
+      border-radius: 14px;
+      background: rgba(0,0,0,.12);
+    }
+    .q h2{
+      margin: 0 0 8px;
+      font-size: 18px;
+    }
+    .choices{
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+    label.choice{
+      display:flex; gap:10px; align-items:center;
+      border:1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px 12px;
+      cursor:pointer;
+      background: rgba(255,255,255,.03);
+      transition: transform .06s ease, border-color .18s ease, background .18s ease;
+      user-select:none;
+      min-height: 52px;
+    }
+    label.choice:hover{
+      transform: translateY(-1px);
+      border-color: rgba(110,168,255,.45);
+      background: rgba(110,168,255,.08);
+    }
+    input[type="radio"]{
+      width: 18px; height: 18px;
+      accent-color: var(--accent);
+      flex: 0 0 auto;
+    }
+    .choice .txt{flex:1}
+
+    /* actions */
+    .actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top: 14px;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .btns{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    button{
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.05);
+      color: var(--text);
+      padding: 10px 14px;
+      border-radius: 14px;
+      cursor:pointer;
+      transition: background .18s ease, border-color .18s ease, transform .06s ease;
+      font-weight: 700;
+    }
+    button:hover{
+      background: rgba(110,168,255,.12);
+      border-color: rgba(110,168,255,.45);
+      transform: translateY(-1px);
+    }
+    button.primary{
+      background: rgba(110,168,255,.20);
+      border-color: rgba(110,168,255,.55);
+    }
+    button:disabled{
+      opacity:.45;
+      cursor:not-allowed;
+      transform:none;
+    }
+    .note{
+      color:var(--muted);
+      font-size: 13px;
+      margin-top: 10px;
+    }
+    .resultBox{
+      margin-top: 12px;
+      padding: 14px;
+      border-radius: 14px;
+      border:1px dashed rgba(255,255,255,.18);
+      background: rgba(255,255,255,.03);
+    }
+    .resultBox h2{
+      margin:0 0 6px;
+      font-size: 18px;
+    }
+    .badge{
+      display:inline-block;
+      padding: 3px 10px;
+      border-radius: 999px;
+      border:1px solid var(--border);
+      color: var(--muted);
+      font-size: 12px;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+    .mono{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+    @media (max-width: 560px){
+      .choices{grid-template-columns: 1fr;}
+      .actions{gap:12px;}
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <div class="card">
+      <div class="top">
+        <div>
+          <h1 class="title" id="headerTitle">スペクトラムバトル</h1>
+          <p class="sub" id="headerSub">4つの質問に答えると診断結果が出ます。</p>
+        </div>
+        <div class="step" id="stepBadge">1 / 6</div>
+      </div>
+
+      <form id="quiz">
+        <!-- 1ページ目：タイトル＆スタート -->
+        <section class="page active" data-page="1">
+          <div class="q">
+            <h2>ようこそ！</h2>
+            <p class="note">各ページでA/Bを選んで「次へ」。最後に診断結果ページへ移動します。</p>
+          </div>
+          <div class="actions">
+            <div class="btns">
+              <button type="button" class="primary" data-next>スタート</button>
+            </div>
+            <div class="btns">
+              <button type="button" data-reset>リセット</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2ページ目：Q1 -->
+        <section class="page" data-page="2">
+          <div class="q">
+            <h2>Q1 もし子供ができたらどう育てるべきだと思う？</h2>
+            <div class="choices">
+              <label class="choice">
+                <input type="radio" name="q1" value="A">
+                <span class="txt">A：子供の自由に任せる放任主義</span>
+              </label>
+              <label class="choice">
+                <input type="radio" name="q1" value="B">
+                <span class="txt">B：ガチガチな管理主義</span>
+              </label>
+            </div>
+            <p class="note">※選択すると「次へ」が押せます。</p>
+          </div>
+
+          <div class="actions">
+            <div class="btns">
+              <button type="button" data-prev>戻る</button>
+              <button type="button" class="primary" data-next disabled>次へ</button>
+            </div>
+            <div class="btns">
+              <button type="button" data-reset>リセット</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3ページ目：Q2 -->
+        <section class="page" data-page="3">
+          <div class="q">
+            <h2>Q2 友達の作り方は？</h2>
+            <div class="choices">
+              <label class="choice">
+                <input type="radio" name="q2" value="A">
+                <span class="txt">A：多ければ多いほど楽しい！</span>
+              </label>
+              <label class="choice">
+                <input type="radio" name="q2" value="B">
+                <span class="txt">B：最高の親友が一人居ればいい</span>
+              </label>
+            </div>
+            <p class="note">※選択すると「次へ」が押せます。</p>
+          </div>
+
+          <div class="actions">
+            <div class="btns">
+              <button type="button" data-prev>戻る</button>
+              <button type="button" class="primary" data-next disabled>次へ</button>
+            </div>
+            <div class="btns">
+              <button type="button" data-reset>リセット</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- 4ページ目：Q3 -->
+        <section class="page" data-page="4">
+          <div class="q">
+            <h2>Q3 良いリーダーとは？</h2>
+            <div class="choices">
+              <label class="choice">
+                <input type="radio" name="q3" value="A">
+                <span class="txt">A：みんなの意見をよく聞くリーダー</span>
+              </label>
+              <label class="choice">
+                <input type="radio" name="q3" value="B">
+                <span class="txt">B：みんなを引っ張っていってくれるリーダー</span>
+              </label>
+            </div>
+            <p class="note">※選択すると「次へ」が押せます。</p>
+          </div>
+
+          <div class="actions">
+            <div class="btns">
+              <button type="button" data-prev>戻る</button>
+              <button type="button" class="primary" data-next disabled>次へ</button>
+            </div>
+            <div class="btns">
+              <button type="button" data-reset>リセット</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- 5ページ目：Q4 -->
+        <section class="page" data-page="5">
+          <div class="q">
+            <h2>Q4 もし歌舞伎役者の子に産まれたら？</h2>
+            <div class="choices">
+              <label class="choice">
+                <input type="radio" name="q4" value="A">
+                <span class="txt">A：そのまま歌舞伎を継ぐ</span>
+              </label>
+              <label class="choice">
+                <input type="radio" name="q4" value="B">
+                <span class="txt">B：継ぎはせず、自分のやりたいことをやる。</span>
+              </label>
+            </div>
+            <p class="note">※選択すると「結果へ」が押せます。</p>
+          </div>
+
+          <div class="actions">
+            <div class="btns">
+              <button type="button" data-prev>戻る</button>
+              <button type="button" class="primary" data-next disabled>結果へ</button>
+            </div>
+            <div class="btns">
+              <button type="button" data-reset>リセット</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- 6ページ目：診断結果（未入力） -->
+        <section class="page" data-page="6">
+          <div class="resultBox">
+            <h2>
+              診断結果
+              <span class="badge">キー：<span class="mono" id="resultKey">----</span></span>
+            </h2>
+            <p class="note" id="resultText">ここに入力</p>
+          </div>
+
+          <div class="actions">
+            <div class="btns">
+              <button type="button" data-prev>戻る</button>
+              <button type="button" class="primary" data-restart>最初から</button>
+            </div>
+            <div class="btns">
+              <button type="button" data-reset>リセット</button>
+            </div>
+          </div>
+        </section>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const pages = Array.from(document.querySelectorAll(".page"));
+    const stepBadge = document.getElementById("stepBadge");
+    const headerTitle = document.getElementById("headerTitle");
+    const headerSub = document.getElementById("headerSub");
+    const form = document.getElementById("quiz");
+
+    const resultKeyEl = document.getElementById("resultKey");
+    const resultTextEl = document.getElementById("resultText");
+
+    // 結果本文はまだ未入力なので、キーだけ出す（AAAA〜BBBBの16通り）
+    const RESULTS_PLACEHOLDER = new Proxy({}, {
+      get: (_, key) => ({ title: "ここに入力", body: "ここに入力" })
+    });
+
+    let current = 1;
+
+    function showPage(n){
+      current = Math.max(1, Math.min(6, n));
+      pages.forEach(p => p.classList.toggle("active", Number(p.dataset.page) === current));
+      stepBadge.textContent = `${current} / 6`;
+
+      // ヘッダー文言（任意）
+      if(current === 1){
+        headerTitle.textContent = "スペクトラムバトル";
+        headerSub.textContent = "4つの質問に答えると診断結果が出ます。";
+      } else if(current >= 2 && current <= 5){
+        headerTitle.textContent = "スペクトラムバトル";
+        headerSub.textContent = "A/Bを選んで次へ進んでください。";
+      } else {
+        headerTitle.textContent = "スペクトラムバトル";
+        headerSub.textContent = "診断結果（仮）です。";
+      }
+
+      // 次へボタンの活性/非活性
+      updateNextButtonState();
+      window.scrollTo({top:0, behavior:"smooth"});
+    }
+
+    function getAnswer(name){
+      return form.querySelector(`input[name="${name}"]:checked`)?.value || null;
+    }
+
+    function getKey(){
+      const a1 = getAnswer("q1");
+      const a2 = getAnswer("q2");
+      const a3 = getAnswer("q3");
+      const a4 = getAnswer("q4");
+      if(!a1 || !a2 || !a3 || !a4) return null;
+      return `${a1}${a2}${a3}${a4}`;
+    }
+
+    function updateResult(){
+      const key = getKey();
+      resultKeyEl.textContent = key ?? "----";
+
+      // ここは未入力運用：キーに応じて「ここに入力」のまま
+      const r = RESULTS_PLACEHOLDER[key || "AAAA"];
+      resultTextEl.textContent = r.body; // = "ここに入力"
+    }
+
+    function updateNextButtonState(){
+      const activePage = pages.find(p => Number(p.dataset.page) === current);
+      if(!activePage) return;
+
+      const nextBtn = activePage.querySelector("[data-next]");
+      if(!nextBtn) return;
+
+      // 1ページ目は常に押せる
+      if(current === 1){
+        nextBtn.disabled = false;
+        return;
+      }
+
+      // Qページは該当設問が選ばれていれば押せる
+      if(current === 2) nextBtn.disabled = !getAnswer("q1");
+      if(current === 3) nextBtn.disabled = !getAnswer("q2");
+      if(current === 4) nextBtn.disabled = !getAnswer("q3");
+      if(current === 5) nextBtn.disabled = !getAnswer("q4");
+    }
+
+    // 選択したら次へボタン有効化
+    form.addEventListener("change", (e) => {
+      if(e.target?.matches('input[type="radio"]')) updateNextButtonState();
+    });
+
+    // クリック操作
+    document.addEventListener("click", (e) => {
+      const t = e.target.closest("button");
+      if(!t) return;
+
+      if(t.hasAttribute("data-next")){
+        // 最終質問の次は結果ページへ
+        if(current === 5){
+          updateResult();
+          showPage(6);
+        } else {
+          showPage(current + 1);
+        }
+      }
+
+      if(t.hasAttribute("data-prev")){
+        showPage(current - 1);
+      }
+
+      if(t.hasAttribute("data-restart")){
+        showPage(1);
+      }
+
+      if(t.hasAttribute("data-reset")){
+        form.reset();
+        resultKeyEl.textContent = "----";
+        resultTextEl.textContent = "ここに入力";
+        showPage(1);
+      }
+    });
+
+    // 初期表示
+    showPage(1);
+  </script>
+</body>
+</html>
