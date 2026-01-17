@@ -167,6 +167,10 @@
       margin:0 0 6px;
       font-size: 18px;
     }
+    .resultTitle{
+      margin: 8px 0 4px;
+      font-size: 16px;
+    }
     .badge{
       display:inline-block;
       padding: 3px 10px;
@@ -334,6 +338,7 @@
               診断結果
               <span class="badge">キー：<span class="mono" id="resultKey">----</span></span>
             </h2>
+            <h3 class="resultTitle" id="resultTitle">ここに入力</h3>
             <p class="note" id="resultText">ここに入力</p>
           </div>
 
@@ -359,12 +364,28 @@
     const form = document.getElementById("quiz");
 
     const resultKeyEl = document.getElementById("resultKey");
+    const resultTitleEl = document.getElementById("resultTitle");
     const resultTextEl = document.getElementById("resultText");
 
-    // 結果本文はまだ未入力なので、キーだけ出す（AAAA〜BBBBの16通り）
-    const RESULTS_PLACEHOLDER = new Proxy({}, {
-      get: (_, key) => ({ title: "ここに入力", body: "ここに入力" })
-    });
+    // 16通りの結果（AAAA〜BBBB）をここに入力してください
+    const RESULTS = {
+      AAAA: { title: "ここに入力", body: "ここに入力" },
+      AAAB: { title: "ここに入力", body: "ここに入力" },
+      AABA: { title: "ここに入力", body: "ここに入力" },
+      AABB: { title: "ここに入力", body: "ここに入力" },
+      ABAA: { title: "ここに入力", body: "ここに入力" },
+      ABAB: { title: "ここに入力", body: "ここに入力" },
+      ABBA: { title: "ここに入力", body: "ここに入力" },
+      ABBB: { title: "ここに入力", body: "ここに入力" },
+      BAAA: { title: "ここに入力", body: "ここに入力" },
+      BAAB: { title: "ここに入力", body: "ここに入力" },
+      BABA: { title: "ここに入力", body: "ここに入力" },
+      BABB: { title: "ここに入力", body: "ここに入力" },
+      BBAA: { title: "ここに入力", body: "ここに入力" },
+      BBAB: { title: "ここに入力", body: "ここに入力" },
+      BBBA: { title: "ここに入力", body: "ここに入力" },
+      BBBB: { title: "ここに入力", body: "ここに入力" }
+    };
 
     let current = 1;
 
@@ -407,9 +428,9 @@
       const key = getKey();
       resultKeyEl.textContent = key ?? "----";
 
-      // ここは未入力運用：キーに応じて「ここに入力」のまま
-      const r = RESULTS_PLACEHOLDER[key || "AAAA"];
-      resultTextEl.textContent = r.body; // = "ここに入力"
+      const r = RESULTS[key] || RESULTS.AAAA;
+      resultTitleEl.textContent = r.title;
+      resultTextEl.textContent = r.body;
     }
 
     function updateNextButtonState(){
@@ -463,6 +484,7 @@
       if(t.hasAttribute("data-reset")){
         form.reset();
         resultKeyEl.textContent = "----";
+        resultTitleEl.textContent = "ここに入力";
         resultTextEl.textContent = "ここに入力";
         showPage(1);
       }
