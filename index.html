@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>スペクトラムバトル</title>
+  <title>いこりか診断</title>
   <style>
     :root{
       --bg:#0f1220;
@@ -196,7 +196,7 @@
     <div class="card">
       <div class="top">
         <div>
-          <h1 class="title" id="headerTitle">スペクトラムバトル</h1>
+          <h1 class="title" id="headerTitle">いこりか診断</h1>
           <p class="sub" id="headerSub">4つの質問に答えると診断結果が出ます。</p>
         </div>
         <div class="step" id="stepBadge">1 / 6</div>
@@ -443,13 +443,13 @@ const RESULTS = {
 
       // ヘッダー文言（任意）
       if(current === 1){
-        headerTitle.textContent = "スペクトラムバトル";
+        headerTitle.textContent = "いこりか診断";
         headerSub.textContent = "4つの質問に答えると診断結果が出ます。";
       } else if(current >= 2 && current <= 5){
-        headerTitle.textContent = "スペクトラムバトル";
+        headerTitle.textContent = "いこりか診断";
         headerSub.textContent = "A/Bを選んで次へ進んでください。";
       } else {
-        headerTitle.textContent = "スペクトラムバトル";
+        headerTitle.textContent = "いこりか";
         headerSub.textContent = "診断結果です。";
       }
 
