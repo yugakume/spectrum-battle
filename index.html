@@ -167,6 +167,10 @@
       margin:0 0 6px;
       font-size: 18px;
     }
+    .resultTitle{
+      margin: 8px 0 4px;
+      font-size: 16px;
+    }
     .badge{
       display:inline-block;
       padding: 3px 10px;
@@ -334,6 +338,7 @@
               診断結果
               <span class="badge">キー：<span class="mono" id="resultKey">----</span></span>
             </h2>
+            <h3 class="resultTitle" id="resultTitle">ここに入力</h3>
             <p class="note" id="resultText">ここに入力</p>
           </div>
 
@@ -359,13 +364,76 @@
     const form = document.getElementById("quiz");
 
     const resultKeyEl = document.getElementById("resultKey");
+    const resultTitleEl = document.getElementById("resultTitle");
     const resultTextEl = document.getElementById("resultText");
 
-    // 結果本文はまだ未入力なので、キーだけ出す（AAAA〜BBBBの16通り）
-    const RESULTS_PLACEHOLDER = new Proxy({}, {
-      get: (_, key) => ({ title: "ここに入力", body: "ここに入力" })
-    });
-
+    // 16通りの結果（AAAA〜BBBB）をここに入力してください
+const RESULTS = {
+  AAAA: {
+    title: "ファシリテーター",
+    body: "自由と対話で、社会を穏やかに動かす"
+  },
+  AAAB: {
+    title: "コミュニティビルダー",
+    body: "自由な場から、新しい社会を育てる"
+  },
+  AABA: {
+    title: "モデレーター",
+    body: "対話と判断のバランスをとる"
+  },
+  AABB: {
+    title: "プロデューサー",
+    body: "民間の力で、社会を前に進める"
+  },
+  ABAA: {
+    title: "カウンセラー",
+    body: "自由を守り、安心を支える"
+  },
+  ABAB: {
+    title: "メンター",
+    body: "人を育て、未来をつくる"
+  },
+  ABBA: {
+    title: "チームリーダー",
+    body: "信頼と決断で、組織を率いる"
+  },
+  ABBB: {
+    title: "ビジョナリー",
+    body: "自由な発想で、社会を変革する"
+  },
+  BAAA: {
+    title: "オーガナイザー",
+    body: "制度と対話で、社会を回す"
+  },
+  BAAB: {
+    title: "イベントディレクター",
+    body: "制度の中で、変化を生み出す"
+  },
+  BABA: {
+    title: "マネージャー",
+    body: "管理と決断で、確実に進める"
+  },
+  BABB: {
+    title: "エグゼクター",
+    body: "結果を出すために、迷わず動く"
+  },
+  BBAA: {
+    title: "アドミニストレーター",
+    body: "制度と対話で、社会を支える"
+  },
+  BBAB: {
+    title: "ストラテジスト",
+    body: "制度と戦略で、未来を設計する"
+  },
+  BBBA: {
+    title: "ディレクター",
+    body: "統率と管理で、秩序を保つ"
+  },
+  BBBB: {
+    title: "コマンダー",
+    body: "強い決断で、社会を守る"
+  }
+};
     let current = 1;
 
     function showPage(n){
@@ -382,7 +450,7 @@
         headerSub.textContent = "A/Bを選んで次へ進んでください。";
       } else {
         headerTitle.textContent = "スペクトラムバトル";
-        headerSub.textContent = "診断結果（仮）です。";
+        headerSub.textContent = "診断結果です。";
       }
 
       // 次へボタンの活性/非活性
@@ -407,9 +475,9 @@
       const key = getKey();
       resultKeyEl.textContent = key ?? "----";
 
-      // ここは未入力運用：キーに応じて「ここに入力」のまま
-      const r = RESULTS_PLACEHOLDER[key || "AAAA"];
-      resultTextEl.textContent = r.body; // = "ここに入力"
+      const r = RESULTS[key] || RESULTS.AAAA;
+      resultTitleEl.textContent = r.title;
+      resultTextEl.textContent = r.body;
     }
 
     function updateNextButtonState(){
@@ -463,6 +531,7 @@
       if(t.hasAttribute("data-reset")){
         form.reset();
         resultKeyEl.textContent = "----";
+        resultTitleEl.textContent = "ここに入力";
         resultTextEl.textContent = "ここに入力";
         showPage(1);
       }
